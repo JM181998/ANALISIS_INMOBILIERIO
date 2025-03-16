@@ -3,7 +3,10 @@
 
 ## 📌 Descripción
 Nuestro proyecto consiste en una aplicación web con Streamlit para analizar el mercado inmobiliario español, utilizando pisos.com como fuente principal de datos. 
-En ella encontrarás varios gráficos para visualizar los datos extraidos y un posterior análisis de los mismos y finalmente crearemos unos modelos de machine learning con la finalidad de predecir el coste aproximado de un inmueble elegido por el usuario.
+
+Aquí encontrarás varios gráficos para visualizar los datos extraidos con un posterior análisis de los mismos y un comparador de inmuebles.
+
+Finalmente crearemos unos modelos de machine learning con la finalidad de predecir el coste aproximado de un inmueble elegido por el usuario.
 
 
 ## 🛠️ Tecnologías
