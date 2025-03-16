@@ -32,5 +32,11 @@ Con esta aplicación, podrás obtener información clave para tomar decisiones m
 3. Ejecuta la app
     ```sh
    streamlit run main.py
-   
+
+## 👥 Autores 
+- **🧑‍💻 CAROLINA MERLO** 
+- **🧑‍💻 ENRIQUE GÓMEZ**
+- **🧑‍💻 FRAN POLO**
+- **🧑‍💻 JORGE GAZULLA**
+- **🧑‍💻 JUAN FUENTES**
 
