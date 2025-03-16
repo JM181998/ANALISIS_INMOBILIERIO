@@ -1,0 +1,23 @@
+# Entorno virtual
+.venv/
+
+# Archivos de entorno
+.env
+
+# Archivos de PyCharm
+.idea/
+
+# Archivos de caché de Python
+__pycache__/
+*.pyc
+
+# Archivos generados
+exportToHTML/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+.streamlit/
+
+.idea/
