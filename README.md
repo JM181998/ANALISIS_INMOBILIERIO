@@ -28,6 +28,7 @@ Nuestro proyecto consiste en una aplicación web con Streamlit para analizar el 
 2. Accede a la carpeta de la app
  ```sh
    cd Streamlit
+```sh
 3. Ejecuta la app
    streamlit run main.py
    
