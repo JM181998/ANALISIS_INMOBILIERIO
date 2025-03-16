@@ -26,10 +26,11 @@ Nuestro proyecto consiste en una aplicación web con Streamlit para analizar el 
    git clone https://github.com/JM181998/ANALISIS-INMOBILIARIO.git
 
 2. Accede a la carpeta de la app
- ```sh
+    ```sh
    cd Streamlit
-```sh
-3. Ejecuta la app
+   
+3.Ejecuta la app
+   ```sh
    streamlit run main.py
    
 
