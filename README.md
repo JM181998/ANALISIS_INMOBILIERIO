@@ -1,12 +1,5 @@
 <em>ANALISIS INMBOLIARIO DE LA PAGINA WEB PISOS.COM </em>
 
-HEMOS DIVIDO EN DIFERENTES CARPETAS LOS DIFERENTES PUNTOS DE LOS SPRINTS, PARA TENER TODO MAS LEGIBLE Y FACIL DE ENCONTRAR.
-
-EN LA CARPETA STREAMLIT TENEMOS LA APLICACION, EJECUNTANDO EL MAIN YA PUEDES EMPEZAR A USAR CADA UNA DE SUS FUNCIONALIDADES
-
-
-
-
 
 ## 📌 Descripción
 Nuestro proyecto consiste en una aplicación web con Streamlit para analizar el mercado inmobiliario español, utilizando pisos.com como fuente principal de datos. Crearemos una base de datos para almacenar eficientemente la información extraída,diseñaremos un proceso ETL para mantenerla actualizada y finalmente crearemos unos modelos de machine learning con la finalidad de predecir el coste aproximado de un inmueble elegido por el usuario.
@@ -30,7 +23,7 @@ Nuestro proyecto consiste en una aplicación web con Streamlit para analizar el 
    cd Streamlit
    
 3.Ejecuta la app
-   ```sh
+    ```sh
    streamlit run main.py
    
 
