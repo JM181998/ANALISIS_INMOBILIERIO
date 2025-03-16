@@ -1,8 +1,9 @@
-# 🏠 ANALISIS INMBOLIARIO EN PISOS.COM 
+# 🏠 ANÁLISIS INMBOLIARIO EN PISOS.COM 
 
 
 ## 📌 Descripción
-Nuestro proyecto consiste en una aplicación web con Streamlit para analizar el mercado inmobiliario español, utilizando pisos.com como fuente principal de datos. Crearemos una base de datos para almacenar eficientemente la información extraída,diseñaremos un proceso ETL para mantenerla actualizada y finalmente crearemos unos modelos de machine learning con la finalidad de predecir el coste aproximado de un inmueble elegido por el usuario.
+Nuestro proyecto consiste en una aplicación web con Streamlit para analizar el mercado inmobiliario español, utilizando pisos.com como fuente principal de datos. 
+En ella encontrarás varios gráficos para visualizar los datos extraidos y un posterior análisis de los mismos y finalmente crearemos unos modelos de machine learning con la finalidad de predecir el coste aproximado de un inmueble elegido por el usuario.
 
 
 ## 🛠️ Tecnologías
@@ -12,7 +13,7 @@ Nuestro proyecto consiste en una aplicación web con Streamlit para analizar el 
 - Machine Learning : scikit-learn, tensorflow...
 - Web : Streamlit
 
-## 📦 Ejecucion
+## 🚀 Ejecución
 
 1. Clona el repositorio:
    ```sh
