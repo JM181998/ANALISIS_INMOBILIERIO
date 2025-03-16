@@ -26,7 +26,7 @@ Finalmente crearemos unos modelos de machine learning con la finalidad de predec
     ```sh
    cd Streamlit
    
-3.Ejecuta la app
+3. Ejecuta la app
     ```sh
    streamlit run main.py
    
