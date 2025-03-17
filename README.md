@@ -13,11 +13,11 @@ Con esta aplicación, podrás obtener información clave para tomar decisiones m
 
 
 ## 🛠️ Tecnologías
-- Extracción de datos : Selenium y  Beautiful Soup
-- EDA : Pandas , Numpy , Plotly ..
-- Base de datos : Mysql
-- Machine Learning : scikit-learn, tensorflow...
-- Web : Streamlit
+- **Extracción de datos :** Selenium y  Beautiful Soup
+- **EDA :** Pandas , Numpy , Plotly ..
+- **Base de datos :** Mysql
+- **Machine Learning :** scikit-learn, tensorflow...
+- **Web :** Streamlit
 
 ## 🚀 Ejecución
 
