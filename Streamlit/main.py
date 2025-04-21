@@ -1,5 +1,5 @@
 import streamlit as st
-from app.pages import home, database, about_us
+from app.pages import home, csv_loader as database, about_us
 from app.pages.compra_venta import eda as cv_eda, comparador as cv_comparador, clustering as cv_clustering, classification as cv_classification, regression as cv_regression
 from app.pages.alquileres import eda as alq_eda, comparador as alq_comparador, clustering as alq_clustering, classification as alq_classification, regression as alq_regression
 
@@ -8,12 +8,19 @@ def main():
 
     # Sidebar
     st.sidebar.title("Navegación")
-    main_page = st.sidebar.selectbox("Selecciona una sección principal", ["Página Principal", "Compra/Venta", "Alquileres", "Base de Datos", "Sobre nosotros"], index=0)
+    main_page = st.sidebar.selectbox("Selecciona una sección principal", [
+        "Página Principal", 
+        "Compra/Venta", 
+        "Alquileres", 
+        "Base de Datos", 
+        "Sobre nosotros"
+    ], index=0)
 
     if main_page == "Página Principal":
         home.main()
     elif main_page == "Compra/Venta":
-        sub_page = st.sidebar.selectbox("Selecciona una subpágina", ["Análisis de datos", "Comparador", "Clustering", "Clasificación", "Regresión"])
+        sub_page = st.sidebar.selectbox("Selecciona una subpágina", [
+            "Análisis de datos", "Comparador", "Clustering", "Clasificación", "Regresión"])
         if sub_page == "Análisis de datos":
             cv_eda.eda_page()
         elif sub_page == "Comparador":
@@ -25,7 +32,8 @@ def main():
         elif sub_page == "Regresión":
             cv_regression.regression_page()
     elif main_page == "Alquileres":
-        sub_page = st.sidebar.selectbox("Selecciona una subpágina", ["Análisis de datos", "Comparador", "Clustering", "Clasificación", "Regresión"])
+        sub_page = st.sidebar.selectbox("Selecciona una subpágina", [
+            "Análisis de datos", "Comparador", "Clustering", "Clasificación", "Regresión"])
         if sub_page == "Análisis de datos":
             alq_eda.eda_page()
         elif sub_page == "Comparador":

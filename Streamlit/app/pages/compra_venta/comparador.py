@@ -1,166 +1,102 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import RobustScaler, QuantileTransformer, StandardScaler, MinMaxScaler
 import plotly.graph_objects as go
-from app.pages.database import cargar_datos_bd
-
-# Cargar datos desde la base de datos
-query = "SELECT * FROM general_compras"
-df = cargar_datos_bd(query)
 
 def comparador_page():
-    st.title("Comparador de Inmuebles en venta")
-    st.write("En esta página podras buscar y comparar inmuebles de diferentes zonas de España.")
-    st.write("Además contamos con una herramienta con la que podrás observar de forma visual las diferencias entre las principales caracteristicas que puede ofrecerte cada uno de ellos.")
+    st.title("Comparador de Inmuebles en Venta")
+    st.write("Busca y compara inmuebles en diferentes zonas de España.")
+    st.write("Visualiza las diferencias entre las principales características de forma clara y directa.")
 
-    ##GRAFICO DE RADAR PARA COMPARAR INMUEBLES##
-    # Definir las columnas importantes
-    columnas_importantes = ['identificador', 'superficie', 'superficie_util', 'planta',
-                            'baños', 'precio_m2', 'precio', 'habitaciones',
-                            'provincia', 'href', 'nombre',
-                            'comunidad_autonoma', 'area']
+    # Cargar y preparar datos
+    df = pd.read_csv("data/compras_completo_limpio.csv")
 
-    # Crear una copia del DataFrame con las columnas importantes
-    df_importante = df[columnas_importantes].copy()
+    columnas_importantes = [
+        'identificador', 'superficie', 'superficie_util', 'planta',
+        'baños', 'precio_m2', 'precio', 'habitaciones',
+        'provincia', 'href', 'nombre',
+        'comunidad_autonoma', 'area'
+    ]
 
-    # Eliminar filas con valores nulos en las columnas especificadas
-    df_importante.dropna(subset=['superficie', 'baños', 'precio_m2',
-                                 'habitaciones', 'planta'], inplace=True)
+    df = df[columnas_importantes].dropna(subset=[
+        'superficie', 'baños', 'precio_m2', 'habitaciones', 'planta'
+    ]).copy()
 
-    # Aplicar transformación logarítmica en precio, precio_m2, superficie y superficie_util
-    df_importante['precio_log'] = np.log1p(df_importante['precio'])
-    df_importante['precio_m2_log'] = np.log1p(df_importante['precio_m2'])
-    df_importante['superficie_log'] = np.log1p(df_importante['superficie'])
-    df_importante['superficie_util_log'] = np.log1p(df_importante['superficie_util'])
+    # Transformaciones logarítmicas
+    df['precio_log'] = np.log1p(df['precio'])
+    df['precio_m2_log'] = np.log1p(df['precio_m2'])
+    df['superficie_log'] = np.log1p(df['superficie'])
+    df['superficie_util_log'] = np.log1p(df['superficie_util'])
 
-    # Combinamos los datos transformados
-    columnas_para_transformar = ['superficie_log',
-                                 'superficie_util_log',
-                                 'precio_m2_log']
-    df_transformed = df_importante[columnas_para_transformar].copy()
-    df_transformed = df_transformed.reset_index(drop=True)
-    df_importante = df_importante.reset_index(drop=True)
-    df_transformed['precio'] = df_importante['precio_log']
-    df_transformed['habitaciones'] = df_importante['habitaciones']
-    df_transformed['baños'] = df_importante['baños']
-    df_transformed['planta'] = df_importante['planta']
-    df_transformed['identificador'] = df_importante['identificador'].values
+    # Dataset para radar
+    radar_cols = ['superficie_log', 'superficie_util_log', 'precio_m2_log', 'precio_log', 'habitaciones', 'baños', 'planta']
+    df_radar = df[['identificador'] + radar_cols].copy()
 
-    # Título de la aplicación
-    st.write('### Selector de inmuebles')
+    # Filtros
+    st.subheader("Filtro de Ubicación")
+    ccaa = st.selectbox("Comunidad Autónoma", sorted(df['comunidad_autonoma'].dropna().unique()))
+    df_filtrado = df[df['comunidad_autonoma'] == ccaa]
 
-    # Filtro de CCAA
-    ccaa_seleccionada = st.selectbox('Selecciona la Comunidad Autonoma', df['comunidad_autonoma'].unique(), index=0)
-
-    # Filtrar el DataFrame por la CCAA seleccionada
-    df_ccaa_filtrado = df[df['comunidad_autonoma'] == ccaa_seleccionada]
-
-    # Filtro de provincias
-    provincias = st.multiselect(
-        'En qué provincia quieres buscar',
-        df_ccaa_filtrado['provincia'].unique(),
-        placeholder='Selecciona una o varias provincias'
-    )
-
-    # Filtrar el DataFrame por provincias seleccionadas
+    provincias = st.multiselect("Provincia", sorted(df_filtrado['provincia'].dropna().unique()))
     if provincias:
-        df_filtrado = df_ccaa_filtrado[df_ccaa_filtrado['provincia'].isin(provincias)]
-    else:
-        df_filtrado = df_ccaa_filtrado
+        df_filtrado = df_filtrado[df_filtrado['provincia'].isin(provincias)]
 
-    # Filtro de áreas
-    areas = st.multiselect(
-        'En qué área concreta quieres buscar',
-        df_filtrado['area'].unique(),
-        placeholder='Selecciona una o varias áreas'
-    )
-
-    # Filtrar el DataFrame por áreas seleccionadas
+    areas = st.multiselect("Área", sorted(df_filtrado['area'].dropna().unique()))
     if areas:
         df_filtrado = df_filtrado[df_filtrado['area'].isin(areas)]
 
-    # Eliminamos columnas completamente vacías
-    df_filtrado = df_filtrado.dropna(axis=1, how='all')
+    if df_filtrado.empty:
+        st.warning("No hay inmuebles disponibles con esos filtros.")
+        return
 
-    # Mostramos el DataFrame filtrado solo si no está vacío
-    if not df_filtrado.empty:
-        st.write('Datos filtrados por ubicación:')
-        st.dataframe(df_filtrado)
-    else:
-        st.write('No hay datos disponibles para las provincias seleccionadas.')
+    st.write("### Inmuebles disponibles:")
+    st.dataframe(df_filtrado)
 
-    # Pedimos que seleccione los identificadores de los inmuebles que se quieren comparar
-    id1 = st.selectbox('Selecciona el primer identificador', df_filtrado['identificador'].unique())
-    id2 = st.selectbox('Selecciona el segundo identificador', df_filtrado['identificador'].unique())
+    # Selección de identificadores
+    st.subheader("Selecciona los inmuebles a comparar")
+    opciones = df_filtrado['identificador'].unique()
+    id1 = st.selectbox("Inmueble 1", opciones)
+    id2 = st.selectbox("Inmueble 2", opciones)
 
-    # Filtramos los datos seleccionados
-    piso1 = df_transformed[df_transformed['identificador'] == id1].drop(columns=['identificador'])
-    piso2 = df_transformed[df_transformed['identificador'] == id2].drop(columns=['identificador'])
+    if id1 == id2:
+        st.warning("Selecciona dos inmuebles diferentes para comparar.")
+        return
 
-    # Añadir el primer valor al final de la lista de valores para cerrar el polígono
-    valores_piso1 = piso1.iloc[0].tolist()
-    valores_piso1.append(valores_piso1[0])
+    # Extraer datos para radar plot
+    piso1 = df_radar[df_radar['identificador'] == id1].drop(columns='identificador').iloc[0]
+    piso2 = df_radar[df_radar['identificador'] == id2].drop(columns='identificador').iloc[0]
+    labels = radar_cols + [radar_cols[0]]
 
-    valores_piso2 = piso2.iloc[0].tolist()
-    valores_piso2.append(valores_piso2[0])
+    r1 = piso1.tolist() + [piso1.tolist()[0]]
+    r2 = piso2.tolist() + [piso2.tolist()[0]]
 
-    # Añadir el primer eje al final de la lista de ejes para cerrar el polígono
-    ejes = piso1.columns.tolist()
-    ejes.append(ejes[0])
-
-    # Verificación de los valores y ejes
-    ##st.write("Valores de 'piso1':", valores_piso1)
-    #st.write("Valores de 'piso2':", valores_piso2)
-    #st.write("Ejes:", ejes)
-
-    # Creamos el gráfico de radar
     fig = go.Figure()
-
     fig.add_trace(go.Scatterpolar(
-        r=valores_piso1,
-        theta=ejes,
+        r=r1,
+        theta=labels,
         fill='toself',
-        name=f'{id1} - {df_filtrado[df_filtrado["identificador"] == id1]["provincia"].values[0]}',
-        #line = dict(color='blue')
+        name=f'{id1} ({df_filtrado[df_filtrado["identificador"] == id1]["provincia"].values[0]})'
     ))
-
     fig.add_trace(go.Scatterpolar(
-        r=valores_piso2,
-        theta=ejes,
+        r=r2,
+        theta=labels,
         fill='toself',
-        name=f'{id2} - {df_filtrado[df_filtrado["identificador"] == id2]["provincia"].values[0]}',
-        #line = dict(color='red')
-
+        name=f'{id2} ({df_filtrado[df_filtrado["identificador"] == id2]["provincia"].values[0]})'
     ))
-
     fig.update_layout(
-        polar=dict(
-            radialaxis=dict(
-                visible=False,
-                range=[-2, 15]  # Ajuste del rango del eje radial
-            )
-        ),
+        polar=dict(radialaxis=dict(visible=False, range=[-2, 15])),
         showlegend=True
     )
-
     st.plotly_chart(fig)
 
-    # Mostramos el DataFrame comparativo
-    piso1_original = df[df['identificador'] == id1][columnas_importantes]
-    piso2_original = df[df['identificador'] == id2][columnas_importantes]
-    df_comparativo = pd.concat([piso1_original, piso2_original], ignore_index=True)
-
-    # Reordenamos las columnas segun su importancia
-    columnas_ordenadas = [
-        'identificador', 'nombre', 'area', 'provincia', 'comunidad_autonoma', 'precio', 'precio_m2',
-        'superficie', 'superficie_util', 'planta',
-        'habitaciones', 'baños', 'href'
-    ]
-    df_comparativo = df_comparativo[columnas_ordenadas]
-
-    st.write('Comparativa de características originales:')
-    st.dataframe(df_comparativo)
+    # Comparativa tabular
+    st.subheader("Comparativa Tabular")
+    comparativa = df[df['identificador'].isin([id1, id2])][[
+        'identificador', 'nombre', 'area', 'provincia', 'comunidad_autonoma',
+        'precio', 'precio_m2', 'superficie', 'superficie_util',
+        'planta', 'habitaciones', 'baños', 'href'
+    ]]
+    st.dataframe(comparativa)
 
 if __name__ == "__main__":
     comparador_page()

@@ -6,8 +6,7 @@ import plotly.graph_objects as go
 from app.pages.database import cargar_datos_bd
 
 # Cargar datos desde la base de datos
-query = "SELECT * FROM general_alquileres"
-df = cargar_datos_bd(query)
+df = pd.read_csv("data/alquileres_completo_limpio.csv")
 
 def comparador_page():
     st.title("Comparador de Inmuebles en alquiler")

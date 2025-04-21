@@ -1,53 +1,30 @@
-import pandas as pd
 import streamlit as st
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
-import plotly.express as px
-import mysql.connector
+import pandas as pd
 import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
 
 def classification_page():
     st.title("Clasificación")
     st.write("Clasificación de inmuebles en el cluster que le corresponde para análisis inmobiliario.")
 
-    # Conexión a la base de datos MySQL
-    conn = mysql.connector.connect(
-        host=st.secrets["database"]["host"],
-        user=st.secrets["database"]["user"],
-        password=st.secrets["database"]["password"],
-        database=st.secrets["database"]["name"],
-        auth_plugin='mysql_native_password'
-    )
-    query = "SELECT * FROM general_compras"
-    df = pd.read_sql(query, conn)
+    # Cargar los datos desde CSV
+    df = pd.read_csv("data/compras_completo_limpio.csv")
+    df_clusters = pd.read_csv("data/compras_clusters.csv")
 
     df["latitud"] = df["coordenadas"].str.split(",").str[0].str.strip().astype(float, errors='ignore')
     df["longitud"] = df["coordenadas"].str.split(",").str[1].str.strip().astype(float, errors='ignore')
 
-    # Eliminar valores atípicos en la superficie (percentil 1 y 99)
-    q1_superficie = df["superficie"].quantile(0.05)
-    q99_superficie = df["superficie"].quantile(0.95)
-    df = df[(df["superficie"] >= q1_superficie) & (df["superficie"] <= q99_superficie)]
+    # Eliminar valores atípicos
+    df = df[
+        (df["superficie"].between(df["superficie"].quantile(0.05), df["superficie"].quantile(0.95))) &
+        (df["superficie_util"].between(df["superficie_util"].quantile(0.01), df["superficie_util"].quantile(0.99))) &
+        (df["precio"].between(df["precio"].quantile(0.02), df["precio"].quantile(0.98)))
+    ]
 
-    # Eliminar valores atípicos en la superficie_util (percentil 1 y 99)
-    q1_superficie = df["superficie_util"].quantile(0.01)
-    q99_superficie = df["superficie_util"].quantile(0.99)
-    df = df[(df["superficie_util"] >= q1_superficie) & (df["superficie_util"] <= q99_superficie)]
-
-    # Eliminar valores atípicos en el precio (percentil 1 y 99)
-    q1_precio = df["precio"].quantile(0.02)
-    q99_precio = df["precio"].quantile(0.98)
-    df = df[(df["precio"] >= q1_precio) & (df["precio"] <= q99_precio)]
-
-    query = "SELECT * FROM compras_clusters"
-    df_clusters = pd.read_sql(query, conn)
-    conn.close()
-
-    clusters = df_clusters['cluster']
-
-    # Introducción de variables
+    # Input del usuario
     input_data = {}
     columnas_clustering = ["precio", "antiguedad", "conservacion", "latitud", "longitud", "piscina", "baños",
                            "chimenea", "habitaciones", "superficie", "superficie_util", "garaje", "provincia",
@@ -80,65 +57,44 @@ def classification_page():
     input_data['orientacion'] = st.selectbox("Introduce la orientación", options=df['orientacion'].unique())
 
     if st.button("Predecir Cluster"):
-        # Convertir input_data a DataFrame
         input_df = pd.DataFrame([input_data])
 
-        # Convertir todas las columnas categóricas a cadenas
-        for column in ['antiguedad', 'conservacion', 'piscina', 'chimenea', 'garaje', 'provincia', 'orientacion']:
-            df[column] = df[column].astype(str)
-            df_clusters[column] = df_clusters[column].astype(str)
+        # Variables categóricas
+        cat_cols = ['antiguedad', 'conservacion', 'piscina', 'chimenea', 'garaje', 'provincia', 'orientacion']
+        for col in cat_cols:
+            df[col] = df[col].astype(str)
+            df_clusters[col] = df_clusters[col].astype(str)
 
-        # Codificar las variables categóricas en input_df
+        # Codificar input y clusters
         label_encoders = {}
-        for column in ['antiguedad', 'conservacion', 'piscina', 'chimenea', 'garaje', 'provincia', 'orientacion']:
+        for col in cat_cols:
             le = LabelEncoder()
-            le.fit(pd.concat([df[column], df_clusters[column]]))  # Ajustar con todas las etiquetas posibles
-            input_df[column] = le.transform(input_df[column])
-            label_encoders[column] = le
+            le.fit(pd.concat([df[col], df_clusters[col]]))
+            input_df[col] = le.transform(input_df[col])
+            df_clusters[col] = le.transform(df_clusters[col])
+            label_encoders[col] = le
 
-        # Escalar los datos de entrada
+        # Escalado
         scaler = StandardScaler()
-        input_df_escalado = scaler.fit_transform(input_df)
+        input_df_scaled = scaler.fit_transform(input_df)
 
-        # Dividir en datos de entrenamiento y prueba
+        # Entrenamiento del modelo
         X = df_clusters[columnas_clustering]
         y = df_clusters['cluster']
 
-        # Codificar las variables categóricas en el DataFrame original
-        for column in ['antiguedad', 'conservacion', 'piscina', 'chimenea', 'garaje', 'provincia', 'orientacion']:
-            df_clusters[column] = label_encoders[column].transform(df_clusters[column])
-
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-        # Entrenar el modelo con los datos y clusters
         model = RandomForestClassifier(n_estimators=100, random_state=42)
         model.fit(X_train, y_train)
 
-        # Realizar la predicción
-        prediction = model.predict(input_df_escalado)
-        st.write(f"El inmueble pertenece al cluster: {prediction[0]}")
+        # Predicción
+        pred = model.predict(input_df_scaled)
+        st.write(f"El inmueble pertenece al cluster: {pred[0]}")
 
-        # Evaluar el modelo
+        # Precisión
         y_pred = model.predict(X_test)
-        accuracy = accuracy_score(y_test, y_pred)
-        st.write(f'Precisión del modelo: {accuracy:.2f}')
-
-        # Aplicar logaritmo al precio
-        #df_clusters["preciolog"] = np.log1p(df_clusters["precio"])
-
-        # Crear el gráfico con Plotly Express
-        #fig = px.scatter(df_clusters, x="superficie", y="preciolog", color="cluster",
-        #                 title="Distribución de Precios vs Superficie por Cluster",
-        #                 labels={"superficie": "Superficie (m²)", "preciolog": "Precio (€)(log)"},
-        #                 opacity=0.5, color_continuous_scale="viridis")
-
-        # Añadir el punto del input del usuario al gráfico
-        #input_df["preciolog"] = np.log1p(input_df["precio"])
-        #fig.add_scatter(x=input_df["superficie"], y=input_df["preciolog"], mode='markers', name='Input del Usuario',
-        #                marker=dict(color='red', size=10))
-
-        # Mostrar el gráfico en Streamlit
-        #st.plotly_chart(fig)
+        acc = accuracy_score(y_test, y_pred)
+        st.write(f"Precisión del modelo: {acc:.2f}")
 
 if __name__ == "__main__":
     classification_page()

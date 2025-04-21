@@ -22,8 +22,7 @@ def clustering_page():
     st.write("Preparación de clusters para análisis inmobiliario.")
 
     # Cargar datos desde la base de datos
-    query = "SELECT * FROM general_alquileres"
-    df = cargar_datos_bd(query)
+    df = pd.read_csv("data/alquileres_completo_limpio.csv")
 
     #df.drop(columns=["superficie_solar"], inplace=True)
 

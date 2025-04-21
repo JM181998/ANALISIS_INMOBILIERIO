@@ -14,15 +14,7 @@ def regression_page():
     st.write("Predicción del precio de inmuebles basado en sus características y cluster.")
 
     # Conexión a la base de datos MySQL
-    conn = mysql.connector.connect(
-        host=st.secrets["database"]["host"],
-        user=st.secrets["database"]["user"],
-        password=st.secrets["database"]["password"],
-        database=st.secrets["database"]["name"],
-        auth_plugin='mysql_native_password'
-    )
-    query = "SELECT * FROM general_alquileres"
-    df = pd.read_sql(query, conn)
+    df = pd.read_csv("data/alquileres_completo_limpio.csv")
 
     df["latitud"] = df["coordenadas"].str.split(",").str[0].str.strip().astype(float, errors='ignore')
     df["longitud"] = df["coordenadas"].str.split(",").str[1].str.strip().astype(float, errors='ignore')

@@ -12,8 +12,7 @@ from app.pages.database import cargar_datos_bd
 #from scripts.data_processing import filtrar_outliers_precio, filtrar_outliers_superficie
 
 # Cargar datos desde la base de datos
-query = "SELECT * FROM general_alquileres"
-df = cargar_datos_bd(query)
+df = pd.read_csv("data/alquileres_completo_limpio.csv")
 
 # Eliminar filas donde el valor de la columna agencia sea "Agencia no disponible"
 #df = df[df['agencia'] != "Agencia no disponible"]
