@@ -1,9 +1,8 @@
-import streamlit as st
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import RobustScaler, QuantileTransformer, StandardScaler, MinMaxScaler
+import streamlit as st
 import plotly.graph_objects as go
-from app.pages.database import cargar_datos_bd
+from app.pages.database import cargar_datos_csv
 
 # Cargar datos desde la base de datos
 df = pd.read_csv("data/alquileres_completo_limpio.csv")

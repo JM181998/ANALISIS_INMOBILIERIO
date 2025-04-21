@@ -8,7 +8,7 @@ import folium
 import geopandas as gpd
 import json
 
-from app.pages.database import cargar_datos_bd
+from app.pages.database import cargar_datos_csv
 #from scripts.data_processing import filtrar_outliers_precio, filtrar_outliers_superficie
 
 # Cargar datos desde la base de datos
